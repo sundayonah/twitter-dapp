@@ -13,7 +13,7 @@ export const TwitterDappContext = createContext({});
 
 export const TwitterDappContextProvider = ({ children }) => {
    // testnet
-   const TwitterDappContractAddress = '0x4b23D455Fd13ed38d7d32E5E1408D4455582dBC5';
+   const TwitterDappContractAddress = '0xdd1e775ce676983851681178AF821f6A6fBc0e0e';
 
    // mainnet
    // const TwitterDappContractAddress = '0xedB8bd7a1866Ac01EDe01CEA7712EBF957a0a9c3';
@@ -25,29 +25,31 @@ export const TwitterDappContextProvider = ({ children }) => {
    const { disconnect } = useDisconnect();
 
    /// state variables
-const [getAllTweets, setGetAllTweets] = useState([])
+   const [getAllTweets, setGetAllTweets] = useState([])
+   const [content, setContent] = useState()
+   const [contentLoading, setContentLoading] = useState(false)
 
-   const handleChange = async (e) => {
-      setStakeAmount(e.target.value);
+   const handleContent = async (e) => {
+      setContent(e.target.value);
    };
 
-   async function getContract() {
-      try {
-         const provider = new ethers.providers.Web3Provider(window.ethereum);
-         const signer = provider.getSigner();
+   // async function getContract() {
+   //    try {
+   //       const provider = new ethers.providers.Web3Provider(window.ethereum);
+   //       const signer = provider.getSigner();
 
-         const contractInstance = new ethers.Contract(
-            TwitterDappContractAddress,
-            twitterDappAbi,
-            signer
-         );
+   //       const contractInstance = new ethers.Contract(
+   //          TwitterDappContractAddress,
+   //          twitterDappAbi,
+   //          signer
+   //       );
 
-         return contractInstance;
-      } catch (error) {
-         console.error('Error getting approval contract:', error);
-         throw error;
-      }
-   }
+   //       return contractInstance;
+   //    } catch (error) {
+   //       console.error('Error getting approval contract:', error);
+   //       throw error;
+   //    }
+   // }
 
 
 
@@ -70,7 +72,7 @@ const [getAllTweets, setGetAllTweets] = useState([])
 
 
 
-              const getAllTweets = await contractInstance.getAllTweet()
+              const getAllTweets = await contractInstance.getAllTweets()
          console.log(getAllTweets)
          setGetAllTweets(getAllTweets)
 
@@ -82,89 +84,13 @@ const [getAllTweets, setGetAllTweets] = useState([])
       viewFunction();
    }, []);
 
-   // useEffect((
-   //    const totalStake = async
-   // ))
-   ///// UNSTAKE F(x) ///////////
 
-   const UnStake = async () => {
-      try {
-         setUnStakeLoading(true);
-         const provider = new ethers.providers.Web3Provider(window.ethereum);
-         const signer = provider.getSigner();
 
-         const contract = new ethers.Contract(
-            TwitterDappContractAddress,
-            twitterDappAbi,
-            signer
-         );
-
-         // const contract = await getContract();
-
-         if (address === undefined) {
-            toast.success(`Please Connect Your Wallet.`, {
-               duration: 4000,
-               position: 'top-right',
-               icon: '❌',
-               style: {
-                  color: '#fff',
-                  background: `linear-gradient(to right, #000f58, #000624)`,
-               },
-            });
-            return;
-         }
-
-         const _amount = ethers.utils.parseEther(stakeAmount, 'ether');
-
-         const stringAmount = _amount.toString();
-
-         // setNoProfitYet(false);
-         // setStakeLoading(true);
-         let tx;
-         // if (profitPool == 0) {
-         //    setNoProfitYet(true);
-         //    setTimeout(() => {
-         //       setNoProfitYet(false);
-         //    }, 3000);
-         // } else {
-         // setNoProfitYet(false);
-         // setProfitLoading(true);
-         tx = await contract.unStake(stringAmount, {
-            gasLimit: 2000000,
-            gasPrice: ethers.utils.parseUnits('15.0', 'gwei'),
-         });
-         const receipt = await tx.wait();
-         if (receipt.status == 1) {
-            setUnStakeLoading(false);
-            toast.success(`Unstaked Successfully.`, {
-               duration: 4000,
-               position: 'top-right',
-               icon: '❌',
-               style: {
-                  color: '#fff',
-                  background: `linear-gradient(to right, #000f58, #000624)`,
-               },
-            });
-            // setProfitLoading(false);
-            // Reload the page after a successful transaction
-            window.location.reload();
-         } else {
-            setUnStakeLoading(false);
-            // setProfitLoading(false);
-         }
-         // }
-      } catch (err) {
-         console.error(err);
-         setUnStakeLoading(false);
-      }
-
-      // setStakeLoading(false);
-   };
 
    ///// STAKE F(x) ///////////
-   const Stake = async () => {
-      console.log('hello stake');
-      setStakeLoading(true);
+   const CreateTweet = async () => {
+      console.log('hello create content');
+      setContentLoading(true);
       try {
          // const contract = await getContract();
 
@@ -191,20 +117,20 @@ const [getAllTweets, setGetAllTweets] = useState([])
          }
 
 
-         const tx = await contract.stake(_amount, {
+         const tx = await contract.createTweet(content, {
             gasLimit: 300000,
             gasPrice: ethers.utils.parseUnits('15.0', 'gwei'),
          });
 
-         setStakeAmount('');
+         setContent('');
 
          const receipt = await tx.wait();
 
          //   check if the transaction was successful
          if (receipt.status === 1) {
-            setStakeLoading(false);
+            setContentLoading(true);
 
-            toast.success(`Staked Successfully`, {
+            toast.success(`Tweet Created`, {
                duration: 4000,
                position: 'top-right',
                icon: '✅',
@@ -213,127 +139,133 @@ const [getAllTweets, setGetAllTweets] = useState([])
                   background: `linear-gradient(to right, #000f58, #000624)`,
                },
             });
+            // window.onload()
          } else {
             console.log('error');
-            setStakeLoading(false);
+            setContentLoading(false);
          }
       } catch (err) {
-         console.error('Error while staking:', err.message);
+         console.error('Error while creating tweet:', err.message);
 
          // error();
          // setStatus('error');
       }
-      setStakeLoading(false);
+      setContentLoading(false);
    };
 
 
-   ///// APPROVE F(x) ///////////
-   const Approved = async () => {
-      // console.log('hello approve');
-      setApprovedLoading(true);
-      // setLessAmount(false);
+   // ///// APPROVE F(x) ///////////
+   // const Approved = async () => {
+   //    // console.log('hello approve');
+   //    setApprovedLoading(true);
+   //    // setLessAmount(false);
 
-      if (address === undefined) {
-         toast.success(`Please Connect Your Wallet.`, {
-            duration: 4000,
-            position: 'top-right',
-            icon: '❌',
-            style: {
-               color: '#fff',
-               background: `linear-gradient(to right, #000f58, #000624)`,
-            },
-         });
-         return;
-      }
+   //    if (address === undefined) {
+   //       toast.success(`Please Connect Your Wallet.`, {
+   //          duration: 4000,
+   //          position: 'top-right',
+   //          icon: '❌',
+   //          style: {
+   //             color: '#fff',
+   //             background: `linear-gradient(to right, #000f58, #000624)`,
+   //          },
+   //       });
+   //       return;
+   //    }
 
-      try {
-         // const getApproveContractAddress = new ethers.Contract(
-         //    TwitterDappContractAddress,
-         //    twitterDappAbi,
-         //    signer
-         // );
+   //    try {
+   //       // const getApproveContractAddress = new ethers.Contract(
+   //       //    TwitterDappContractAddress,
+   //       //    twitterDappAbi,
+   //       //    signer
+   //       // );
 
-         const provider = new ethers.providers.Web3Provider(window.ethereum);
-         const signer = provider.getSigner();
+   //       const provider = new ethers.providers.Web3Provider(window.ethereum);
+   //       const signer = provider.getSigner();
 
-         // const instanceContract = getContract();
+   //       // const instanceContract = getContract();
 
-         const contractInstance = new ethers.Contract(
-            '0xba0161322A09AbE48F06cE5656c1b66bFB01BE56',
-            approveAbi,
-            signer
-         );
+   //       const contractInstance = new ethers.Contract(
+   //          '0xba0161322A09AbE48F06cE5656c1b66bFB01BE56',
+   //          approveAbi,
+   //          signer
+   //       );
 
-         // Convert the input stakeAmount to Ether
-         const _amount = ethers.utils.parseEther(stakeAmount, 'ether');
-         // console.log(_amount);
-         const amountToString = _amount.toString();
+   //       // Convert the input stakeAmount to Ether
+   //       const _amount = ethers.utils.parseEther(stakeAmount, 'ether');
+   //       // console.log(_amount);
+   //       const amountToString = _amount.toString();
 
-         // estimatesGas//////////
+   //       // estimatesGas//////////
 
-         // Estimate gas for the approve function
-         const estimatedGas = await contractInstance.estimateGas.approve(
-            TwitterDappContractAddress,
-            amountToString
-         );
-         /////////////
+   //       // Estimate gas for the approve function
+   //       const estimatedGas = await contractInstance.estimateGas.approve(
+   //          TwitterDappContractAddress,
+   //          amountToString
+   //       );
+   //       /////////////
 
-         // console.log(estimatedGas.toString());
+   //       // console.log(estimatedGas.toString());
 
-         let tx;
+   //       let tx;
 
-         tx = await contractInstance.approve(
-            TwitterDappContractAddress,
-            amountToString,
-            {
-               gasLimit: estimatedGas,
-               gasPrice: ethers.utils.parseUnits('15', 'gwei'),
-            }
-         );
+   //       tx = await contractInstance.approve(
+   //          TwitterDappContractAddress,
+   //          amountToString,
+   //          {
+   //             gasLimit: estimatedGas,
+   //             gasPrice: ethers.utils.parseUnits('15', 'gwei'),
+   //          }
+   //       );
 
-         // setIsApproved(true);
-         const receipt = await tx.wait();
-         //   check if the transaction was successful
-         if (receipt.status === 1) {
-            toast.success(`Approved.`, {
-               duration: 4000,
-               position: 'top-right',
-               icon: '✅',
-               style: {
-                  color: '#fff',
-                  background: `linear-gradient(to right, #000f58, #000624)`,
-               },
-            });
+   //       // setIsApproved(true);
+   //       const receipt = await tx.wait();
+   //       //   check if the transaction was successful
+   //       if (receipt.status === 1) {
+   //          toast.success(`Approved.`, {
+   //             duration: 4000,
+   //             position: 'top-right',
+   //             icon: '✅',
+   //             style: {
+   //                color: '#fff',
+   //                background: `linear-gradient(to right, #000f58, #000624)`,
+   //             },
+   //          });
 
-            setIsApproved(true);
-            setApprovedLoading(false);
-         } else {
-         }
-         // }
+   //          setIsApproved(true);
+   //          setApprovedLoading(false);
+   //       } else {
+   //       }
+   //       // }
 
-         // setIsApproved(true);
-      } catch (error) {
-         console.error(error);
+   //       // setIsApproved(true);
+   //    } catch (error) {
+   //       console.error(error);
 
-         if (error.code === 4001) {
-            // User cancelled the transaction, set loading to false
-            setApprovedLoading(false);
-         } else {
-            // Handle other transaction errors
-            console.error(error);
-         }
-         setApprovedLoading(false);
-      }
+   //       if (error.code === 4001) {
+   //          // User cancelled the transaction, set loading to false
+   //          setApprovedLoading(false);
+   //       } else {
+   //          // Handle other transaction errors
+   //          console.error(error);
+   //       }
+   //       setApprovedLoading(false);
+   //    }
 
-      // setIsLoading(false);
-   };
+   //    // setIsLoading(false);
+   // };
 
   
 
    return (
       <TwitterDappContext.Provider
          value={{
-          getAllTweets
+            content,
+            getAllTweets,
+            setContent,
+            handleContent,
+            CreateTweet,
+            contentLoading
          }}
       >
          {children}
