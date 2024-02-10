@@ -13,10 +13,8 @@ export const TwitterDappContext = createContext({});
 
 export const TwitterDappContextProvider = ({ children }) => {
    // testnet
-   const TwitterDappContractAddress = '0xdd1e775ce676983851681178AF821f6A6fBc0e0e';
-
-   // mainnet
-   // const TwitterDappContractAddress = '0xedB8bd7a1866Ac01EDe01CEA7712EBF957a0a9c3';
+   const TwitterDappContractAddress =
+      '0xdd1e775ce676983851681178AF821f6A6fBc0e0e';
 
    const { address, isConnected } = useAccount();
    const { connect } = useConnect({
@@ -25,9 +23,16 @@ export const TwitterDappContextProvider = ({ children }) => {
    const { disconnect } = useDisconnect();
 
    /// state variables
-   const [getAllTweets, setGetAllTweets] = useState([])
-   const [content, setContent] = useState()
-   const [contentLoading, setContentLoading] = useState(false)
+   const [getAllTweets, setGetAllTweets] = useState([]);
+   const [content, setContent] = useState();
+   const [contentLoading, setContentLoading] = useState(false);
+   const [events, setEvents] = useState([]);
+   const [displayName, setDisplayName] = useState('');
+   const [bio, setBio] = useState('');
+   const [userLoading, setUserLoading] = useState(false);
+   const [error, setError] = useState('');
+
+   const [userProfile, setUserProfile] = useState(null);
 
    const handleContent = async (e) => {
       setContent(e.target.value);
@@ -51,14 +56,9 @@ export const TwitterDappContextProvider = ({ children }) => {
    //    }
    // }
 
-
-
-
    useEffect(() => {
       const viewFunction = async () => {
          try {
-            // const contractInstance = await getContract();
-
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
 
@@ -67,27 +67,46 @@ export const TwitterDappContextProvider = ({ children }) => {
                twitterDappAbi,
                signer
             );
-            const getMaxTweet = await contractInstance.MAX_TWEET()
-         console.log(getMaxTweet.toString())
-
-
-
-              const getAllTweets = await contractInstance.getAllTweets()
-         console.log(getAllTweets)
-         setGetAllTweets(getAllTweets)
-
+            const getMaxTweet = await contractInstance.MAX_TWEET();
+            console.log(getMaxTweet.toString());
+            const getAllTweets = await contractInstance.getAllTweets();
+            const tweets = await contractInstance.tweets(address, 1);
+            console.log(tweets.toString());
+            console.log(getAllTweets);
+            setGetAllTweets(getAllTweets);
+            // const getId = getAllTweets[2]
+            // console.log(getId.toString())
          } catch (error) {
             console.error(error);
          }
       };
-
       viewFunction();
    }, []);
 
+   const likeTweet = async (id) => {
+      try {
+         const provider = new ethers.providers.Web3Provider(window.ethereum);
+         const signer = provider.getSigner();
 
+         const contract = new ethers.Contract(
+            TwitterDappContractAddress,
+            twitterDappAbi,
+            signer
+         );
 
+         const tx = await contract.likeTweet(address, id);
+         console.log(tx);
 
-   ///// STAKE F(x) ///////////
+         await tx.wait();
+
+         // Update UI or perform other actions
+      } catch (error) {
+         console.error('Error liking tweet:', error);
+         // Handle error
+      }
+   };
+
+   ///// CreaTetweet F(x) ///////////
    const CreateTweet = async () => {
       console.log('hello create content');
       setContentLoading(true);
@@ -116,7 +135,6 @@ export const TwitterDappContextProvider = ({ children }) => {
             return;
          }
 
-
          const tx = await contract.createTweet(content, {
             gasLimit: 300000,
             gasPrice: ethers.utils.parseUnits('15.0', 'gwei'),
@@ -139,7 +157,7 @@ export const TwitterDappContextProvider = ({ children }) => {
                   background: `linear-gradient(to right, #000f58, #000624)`,
                },
             });
-            // window.onload()
+            window.location.reload();
          } else {
             console.log('error');
             setContentLoading(false);
@@ -153,6 +171,56 @@ export const TwitterDappContextProvider = ({ children }) => {
       setContentLoading(false);
    };
 
+   // Set userProfile function
+   const SetProfile = async () => {
+      if (!displayName || !bio) {
+         setError('Display name and bio cannot be empty.');
+         setTimeout(() => {
+            setError('');
+         }, 3000);
+         return;
+      }
+      setUserLoading(true);
+
+      try {
+         const provider = new ethers.providers.Web3Provider(window.ethereum);
+         const signer = provider.getSigner();
+
+         const contract = new ethers.Contract(
+            TwitterDappContractAddress,
+            twitterDappAbi,
+            signer
+         );
+
+         const tx = await contract.setProfile(displayName, bio, {
+            gasLimit: 300000,
+            gasPrice: ethers.utils.parseUnits('15.0', 'gwei'),
+         });
+
+         const receipt = await tx.wait();
+
+         setDisplayName('');
+         setBio('');
+
+         //   check if the transaction was successful
+         if (receipt.status === 1) {
+            setUserLoading(false);
+
+            toast.success(`Profile set successfully`, {
+               duration: 4000,
+               position: 'top-right',
+               icon: '✅',
+               style: {
+                  color: '#fff',
+                  background: `linear-gradient(to right, #000f58, #000624)`,
+               },
+            });
+         }
+         setUserLoading(false);
+      } catch (error) {
+         console.error('Error setting profile:', error);
+      }
+   };
 
    // ///// APPROVE F(x) ///////////
    // const Approved = async () => {
@@ -255,8 +323,6 @@ export const TwitterDappContextProvider = ({ children }) => {
    //    // setIsLoading(false);
    // };
 
-  
-
    return (
       <TwitterDappContext.Provider
          value={{
@@ -265,7 +331,15 @@ export const TwitterDappContextProvider = ({ children }) => {
             setContent,
             handleContent,
             CreateTweet,
-            contentLoading
+            contentLoading,
+            likeTweet,
+            setDisplayName,
+            setBio,
+            displayName,
+            bio,
+            SetProfile,
+            userLoading,
+            error,
          }}
       >
          {children}
