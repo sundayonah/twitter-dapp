@@ -24,57 +24,44 @@ export const UserProfile = () => {
 
    return (
       <>
-         <div className="max-w-2xl mx-auto lg:w-[35%] w-[60%] 2xl:[20%]  mt-52">
+         <div className="max-w-2xl mx-auto sm:w-[80%] lg:w-[60%] xl:w-[50%] mt-52 px-4">
             <Toaster />
-            <h1 className="flex justify-center text-2xl mb-4 ">Twitter DApp</h1>
+            <h1 className="text-center text-2xl mb-4">Twitter DApp</h1>
 
-            <div className="flex flex-col justify-center items-center border border-gray-700 rounded-md shadow-2xl">
-               <h2 className="mt-4 text-2xl text-blue-500">
+            <div className="flex flex-col justify-center items-center border border-gray-700 rounded-md shadow-2xl px-8 py-6">
+               <h2 className="text-2xl text-blue-500 mb-4">
                   Create Your Profile
                </h2>
                <p className="text-red-500">{error}</p>
 
-               <div className=" my-5">
-                  <div>
-                     <label>UserName</label> <br />
+               <div className="my-4 w-full">
+                  <div className="mb-4">
+                     <label htmlFor="displayName">Username</label>
                      <input
                         type="text"
-                        // placeholder="Display Name"
+                        id="displayName"
                         value={displayName}
                         onChange={handleDisplay}
-                        className="bg-gray-800/90 border-none rounded-md focus-none py-2 pr-28 pl-6 outline-none"
+                        className="bg-gray-800/90 border-none rounded-md py-2 pl-2 outline-none w-full"
                      />
                   </div>
-                  <div>
-                     <br />
-                     <label>Bio</label> <br />
-                     <input
-                        type="text"
-                        // placeholder="Bio"
+                  <div className="mb-4">
+                     <label htmlFor="bio">Bio</label>
+                     <textarea
+                        id="bio"
                         value={bio}
                         onChange={handleBio}
-                        className="bg-gray-800/90 border-none rounded-md focus-none py-2 pr-28 pl-6  outline-none"
-                     />
+                        className="bg-gray-800/90 border-none rounded-md py-2 pl-2 outline-none w-full resize-none"
+                        rows={2}
+                     ></textarea>
                   </div>
                </div>
                <button
-                  className="flex py-1 px-16 rounded-md bg-blue-500 mb-4 shadow-2xl"
+                  className="py-2 px-8 rounded-md bg-blue-500 text-white mb-4 shadow-2xl"
                   onClick={() => SetProfile()}
                >
                   {userLoading ? <Loading /> : 'Set Profile'}
                </button>
-
-               {/*<h2>Get Profile</h2>
-                  <input type="text" placeholder="User Address" value={userAddress} onChange={(e) => setUserAddress(e.target.value)} />
-                  <button onClick={getProfile}>Get Profile</button> */}
-
-               {/* {userProfile && (
-                  <div>
-                  <h3>User Profile</h3>
-                  <p>Display Name: {userProfile.displayName}</p>
-                  <p>Bio: {userProfile.bio}</p>
-                  </div>
-                )} */}
             </div>
          </div>
       </>

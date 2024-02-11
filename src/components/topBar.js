@@ -16,11 +16,12 @@ const TopBar = () => {
                {/* Stake ANC and ANC while Staking */}
             </span>
             <div className="flex max-w-2xl justify-between items-start border-b m-3 py-4 px-4 rounded-md">
-               <input
+               <textarea
                   value={content}
                   onChange={handleContent}
                   placeholder="What is happening?!"
-                  className="bg-transparent border-none focus-none py-4 px-16  outline-none"
+                  className="bg-transparent border-none focus-none py-4 px-4 outline-none resize-none w-full"
+                  rows={1} // You can adjust the number of rows as needed
                />
             </div>
             <div className="flex justify-end mb-3">
