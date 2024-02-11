@@ -4,6 +4,7 @@ import { InjectedConnector } from 'wagmi/connectors/injected';
 import { useWeb3Modal, useWeb3ModalTheme } from '@web3modal/wagmi/react';
 import { ethers } from 'ethers';
 import twitterDappAbi from '@/Contract/twitterDappAbi.json';
+import twitterProfileAbi from '@/Contract/profileAbi.json';
 import approveAbi from '@/Contract/approve.json';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -14,7 +15,10 @@ export const TwitterDappContext = createContext({});
 export const TwitterDappContextProvider = ({ children }) => {
    // testnet
    const TwitterDappContractAddress =
-      '0xdd1e775ce676983851681178AF821f6A6fBc0e0e';
+      '0xaCb0876eD986311efAb4e1c1c970c22aA75eeb82';
+   // '0xdd1e775ce676983851681178AF821f6A6fBc0e0e';
+   const TwitterProfileContractAddress =
+      '0x629b9391fE75d79D9706397B12ef30B6873C931b';
 
    const { address, isConnected } = useAccount();
    const { connect } = useConnect({
@@ -31,6 +35,7 @@ export const TwitterDappContextProvider = ({ children }) => {
    const [bio, setBio] = useState('');
    const [userLoading, setUserLoading] = useState(false);
    const [error, setError] = useState('');
+   const [isRegistered, setIsRegistered] = useState(false);
 
    const [userProfile, setUserProfile] = useState(null);
 
@@ -68,11 +73,10 @@ export const TwitterDappContextProvider = ({ children }) => {
                signer
             );
             const getMaxTweet = await contractInstance.MAX_TWEET();
-            console.log(getMaxTweet.toString());
             const getAllTweets = await contractInstance.getAllTweets();
-            const tweets = await contractInstance.tweets(address, 1);
-            console.log(tweets.toString());
-            console.log(getAllTweets);
+            // console.log(getAllTweets);
+            // const tweets = await contractInstance.tweets(address, 1);
+            // console.log(tweets.toString());
             setGetAllTweets(getAllTweets);
             // const getId = getAllTweets[2]
             // console.log(getId.toString())
@@ -81,6 +85,30 @@ export const TwitterDappContextProvider = ({ children }) => {
          }
       };
       viewFunction();
+   }, []);
+
+   const checkRegistration = async () => {
+      try {
+         const provider = new ethers.providers.Web3Provider(window.ethereum);
+         const signer = provider.getSigner();
+
+         const profileContract = new ethers.Contract(
+            TwitterProfileContractAddress,
+            twitterProfileAbi,
+            signer
+         );
+
+         const userProfile = await profileContract.getProfile(address);
+         console.log(userProfile.displayName !== '');
+         setIsRegistered(userProfile.displayName !== '');
+      } catch (error) {
+         console.error('Error checking registration:', error);
+      }
+   };
+
+   // Call checkRegistration() when needed, e.g., when the component mounts
+   useEffect(() => {
+      checkRegistration();
    }, []);
 
    const likeTweet = async (id) => {
@@ -187,8 +215,8 @@ export const TwitterDappContextProvider = ({ children }) => {
          const signer = provider.getSigner();
 
          const contract = new ethers.Contract(
-            TwitterDappContractAddress,
-            twitterDappAbi,
+            TwitterProfileContractAddress,
+            twitterProfileAbi,
             signer
          );
 
@@ -216,10 +244,14 @@ export const TwitterDappContextProvider = ({ children }) => {
                },
             });
          }
+         window.location.reload();
+
          setUserLoading(false);
       } catch (error) {
          console.error('Error setting profile:', error);
+         setUserLoading(false);
       }
+      setUserLoading(false);
    };
 
    // ///// APPROVE F(x) ///////////
@@ -340,6 +372,7 @@ export const TwitterDappContextProvider = ({ children }) => {
             SetProfile,
             userLoading,
             error,
+            isRegistered,
          }}
       >
          {children}

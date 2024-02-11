@@ -3,13 +3,15 @@ import MainPage from '@/components/main';
 import Header from '@/components/header';
 import TopBar from '@/components/topBar';
 import { UserProfile } from '@/components/userProfile';
+import { useContext } from 'react';
+import { TwitterDappContext } from '@/Context/TwitterDappContext';
 
 export default function Home() {
-   const profile = true;
+   const { isRegistered } = useContext(TwitterDappContext);
    return (
       <div>
          <Header />
-         {profile ? (
+         {!isRegistered ? (
             <UserProfile />
          ) : (
             <>
